@@ -879,6 +879,7 @@ export const typeMapGet = (parent, key) => {
  * @param {AbstractType<any>} parent
  * @param {boolean} getDeletionsAlso
  * @param {Snapshot|undefined} snapshot
+ * @param {Snapshot|undefined} prevSnapshot
  * @return {Object<string,Object<string,any>|number|null|Array<any>|string|Uint8Array|AbstractType<any>|undefined>}
  *
  * @private
@@ -887,32 +888,80 @@ export const typeMapGet = (parent, key) => {
 export const typeMapGetAll = (
   parent,
   getDeletionsAlso = false,
-  snapshot = undefined
+  snapshot = undefined,
+  prevSnapshot = undefined
 ) => {
   /**
    * @type {Object<string,any>}
    */
-   const res = {};
-   console.log(parent, 'parent');
-   parent._map.forEach((value, key) => {
-     if (!value.deleted) {
-       if (getDeletionsAlso) {
-         let item = value.left;
-         let leftValue = null;
-         while (item) {
-           if (isVisible(item, snapshot)) {
-             leftValue = item.content.getContent()[value.length - 1];
-           }
-           item = item.left;
-         }
-         res[key] = leftValue || value.content.getContent()[value.length - 1];
-       } else {
-         res[key] = value.content.getContent()[value.length - 1];
-       }
-     } 
-   });
-   return res;
-}
+  const res = {};
+
+  const getSnapshotAttrs = /** @param {Item} _item */ (_item) => {
+    let item = _item.left;
+    let leftValue;
+    while (item) {
+      if (isVisible(item, snapshot)) {
+        leftValue = item.content.getContent()[item.length - 1];
+      }
+      item = item.left;
+    }
+    return leftValue;
+  };
+
+  snapshot && console.debug('parent', parent)
+  parent._map.forEach((value, key) => {
+    if (!value.deleted) {
+      if (getDeletionsAlso) {
+        const leftValue = getSnapshotAttrs(value);
+        res[key] = leftValue !== undefined ? leftValue : value.content.getContent()[value.length - 1];
+      } else {
+        res[key] = value.content.getContent()[value.length - 1];
+      }
+    } else if (getDeletionsAlso) {
+      const leftValue = getSnapshotAttrs(value);
+      res[key] = leftValue !== undefined ? leftValue : value.content.getContent()[value.length - 1];
+    }
+  });
+  return res;
+};
+// /**
+//  * @param {AbstractType<any>} parent
+//  * @param {boolean} getDeletionsAlso
+//  * @param {Snapshot|undefined} snapshot
+//  * @return {Object<string,Object<string,any>|number|null|Array<any>|string|Uint8Array|AbstractType<any>|undefined>}
+//  *
+//  * @private
+//  * @function
+//  */
+// export const typeMapGetAll = (
+//   parent,
+//   getDeletionsAlso = false,
+//   snapshot = undefined
+// ) => {
+//   /**
+//    * @type {Object<string,any>}
+//    */
+//    const res = {};
+//    console.log(parent, 'parent');
+//    parent._map.forEach((value, key) => {
+//      if (!value.deleted) {
+//        if (getDeletionsAlso) {
+//          let item = value.left;
+//          let leftValue = null;
+//          while (item) {
+//            if (isVisible(item, snapshot)) {
+//              leftValue = item.content.getContent()[value.length - 1];
+//            }
+//            item = item.left;
+//          }
+//          res[key] = leftValue || value.content.getContent()[value.length - 1];
+//        } else {
+//          res[key] = value.content.getContent()[value.length - 1];
+//        }
+//      } 
+//    });
+//    return res;
+// }
 
 /**
  * @param {AbstractType<any>} parent
