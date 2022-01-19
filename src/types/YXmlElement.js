@@ -182,7 +182,7 @@ export class YXmlElement extends YXmlFragment {
    * @public
    */
   getAttributes (snapshot) {
-    return typeMapGetAll(this)
+    return typeMapGetAll(this, true, snapshot)
   }
 
   /**

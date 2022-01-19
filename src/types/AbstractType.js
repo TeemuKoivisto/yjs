@@ -877,22 +877,41 @@ export const typeMapGet = (parent, key) => {
 
 /**
  * @param {AbstractType<any>} parent
+ * @param {boolean} getDeletionsAlso
+ * @param {Snapshot|undefined} snapshot
  * @return {Object<string,Object<string,any>|number|null|Array<any>|string|Uint8Array|AbstractType<any>|undefined>}
  *
  * @private
  * @function
  */
-export const typeMapGetAll = (parent) => {
+export const typeMapGetAll = (
+  parent,
+  getDeletionsAlso = false,
+  snapshot = undefined
+) => {
   /**
    * @type {Object<string,any>}
    */
-  const res = {}
-  parent._map.forEach((value, key) => {
-    if (!value.deleted) {
-      res[key] = value.content.getContent()[value.length - 1]
-    }
-  })
-  return res
+   const res = {};
+   console.log(parent, 'parent');
+   parent._map.forEach((value, key) => {
+     if (!value.deleted) {
+       if (getDeletionsAlso) {
+         let item = value.left;
+         let leftValue = null;
+         while (item) {
+           if (isVisible(item, snapshot)) {
+             leftValue = item.content.getContent()[value.length - 1];
+           }
+           item = item.left;
+         }
+         res[key] = leftValue || value.content.getContent()[value.length - 1];
+       } else {
+         res[key] = value.content.getContent()[value.length - 1];
+       }
+     } 
+   });
+   return res;
 }
 
 /**
