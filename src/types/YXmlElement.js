@@ -176,14 +176,15 @@ export class YXmlElement extends YXmlFragment {
   /**
    * Returns all attribute name/value pairs in a JSON Object.
    *
+   * @param {boolean} [getDeleted]
    * @param {Snapshot} [snapshot]
    * @param {Snapshot|undefined} [prevSnapshot]
    * @return {Object<string, any>} A JSON Object that describes the attributes.
    *
    * @public
    */
-  getAttributes (snapshot, prevSnapshot) {
-    return typeMapGetAll(this, true, snapshot, prevSnapshot)
+  getAttributes (getDeleted, snapshot, prevSnapshot) {
+    return typeMapGetAll(this, getDeleted, snapshot, prevSnapshot)
   }
 
   /**
